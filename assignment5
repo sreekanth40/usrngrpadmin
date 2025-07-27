@@ -1,0 +1,148 @@
+Lab Tasks
+
+1. Create Users and Groups
+
+Create a new group called engineers
+
+sudo groupadd engineers
+
+Create two users:
+
+devuser1: Add to group engineers, set /bin/bash as default shell, and set a comment "Developer One".
+
+devuser2: Add to group engineers, with a custom home directory /customhome/devuser2.
+
+1. Create devuser1
+
+sudo useradd -m -s /bin/bash -c "Developer One" -G engineers devuser1
+
+-m: Creates the home directory.
+
+-s /bin/bash: Sets default shell to bash.
+
+-c "Developer One": Sets the comment.
+
+-G engineers: Adds user to the engineers group.
+
+devuser1: The username.
+
+2. Create devuser2
+
+sudo useradd -m -d /customhome/devuser2 -G engineers devuser2
+
+-m: Creates the home directory.
+
+-d /customhome/devuser2: Specifies a custom home directory.
+
+-G engineers: Adds user to the engineers group.
+
+devuser2: The username.
+
+Set a password for both users.
+
+sudo passwd devuser1
+
+Enter and confirm password for devuser1 
+
+sudo passwd devuser2
+
+Enter and confirm password for devuser2
+
+Configure the following password aging policy for devuser1:
+
+Minimum days between password changes: 2
+Maximum days between password changes: 45
+Warning days before expiration: 7
+
+sudo chage -m 2 -M 45 -W 7 devuser1
+
+To check it: chage -l devuser1
+
+3. Sudo Access
+
+Add devuser1 to the sudo (or wheel) group to allow administrative privileges.
+
+Command: sudo usermod -aG sudo devuser1
+
+4. Account Expiry and Lock
+
+  Set an account expiry date for devuser2 (15 days from today)
+
+    Command: sudo chage -E "$(date -I -d '+15 days')" devuser2
+
+  Lock the devuser2 account temporarily.
+   
+    Command: sudo usermod --lock devuser2
+
+
+Verification
+
+Use commands to verify:
+
+Group membership: 
+    Command: groups devuser1
+             groups devuser2
+Password aging policies: 
+    Command: sudo chage -l devuser1
+             sudo chage -l devuser2
+Sudo access: 
+    Command: sudo -l -U devuser1
+Account expiration: 
+    Command: sudo chage -l devuser2
+             
+
+Outputs
+
+1. cat /etc/passwd | grep devuser
+
+root@ubuntu:~# cat /etc/passwd | grep devuser
+devuser1:x:1005:1006:Developer One:/home/devuser1:/bin/bash
+devuser2:x:1006:1007::/customhome/devuser2:/bin/sh
+root@ubuntu:~#
+
+2. groups devuser1
+root@ubuntu:~# groups devuser1
+devuser1 : devuser1 sudo engineers
+
+3. chage -l devuser1
+root@ubuntu:~# chage -l devuser1
+Last password change                                    : Jul 27, 2025
+Password expires                                        : Sep 10, 2025
+Password inactive                                       : never
+Account expires                                         : never
+Minimum number of days between password change          : 2
+Maximum number of days between password change          : 45
+Number of days of warning before password expires       : 7
+root@ubuntu:~#
+
+4. sudo -l -U devuser1
+root@ubuntu:~# sudo -l -U devuser1
+Matching Defaults entries for devuser1 on ubuntu:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin,
+    use_pty
+
+User devuser1 may run the following commands on ubuntu:
+    (ALL : ALL) ALL
+root@ubuntu:~#
+
+5. ls -ld /customhome/devuser2
+root@ubuntu:~# ls -ld /customhome/devuser2
+drwxr-x--- 2 devuser2 devuser2 4096 Jul 27 12:35 /customhome/devuser2
+root@ubuntu:~#
+
+6. Cleanup
+ Unlock devuser2 and remove both users (devuser1, devuser2) along with their home directories.
+  sudo usermod --unlock devuser2
+  sudo userdel -r devuser1
+  sudo userdel -r devuser2
+
+ Delete the engineers group.
+
+  Command: sudo groupdel engineers
+
+
+
+
+
+
